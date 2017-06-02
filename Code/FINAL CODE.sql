@@ -48,8 +48,9 @@ Create Table [dbo].[Patients] (
 	PatientLName nVarchar(100) NOT NULL,
 	PatientAddress nVarchar(100) NOT NULL,
 	PatientCity nVarchar(100) NOT NULL,
+	PatientState nVarchar(100) NOT NULL,
 	PatientZip nVarchar(100) NOT NULL,
-	PatientPhone nVarchar(20) NOT NULL,
+	PatientPhone nVarchar(20) NOT NULL
 	CONSTRAINT [UQ_PatientInfo] UNIQUE NONCLUSTERED
 	(
 		[PatientFName], [PatientLName], [PatientPhone]
@@ -340,6 +341,23 @@ As
 	End
 GO
 
+-- Checks date time
+CREATE PROC pCheckTime
+	(@DatetoVerify DateTime)
+AS
+	DECLARE @ErrorNumber int
+	IF @DatetoVerify < GETDATE() 
+		BEGIN
+			SET @ErrorNumber = -100 -- Appointment date is before current date
+		END
+	ELSE
+		BEGIN
+			SET @ErrorNumber = 100 -- Appointment Date is after current date
+		END
+RETURN @ErrorNumber
+-- End of pCheckDateRange
+
+
 -- Appointment Insert
 Create Proc pInsAppointment (
 	@PatientID int,
@@ -348,6 +366,14 @@ Create Proc pInsAppointment (
 	@AppointmentTime datetime
 )
 As 
+Declare @rc int
+Exec @rc = pCheckTime @AppointmentTime
+
+IF @rc = -100
+	Begin
+		Set @ErrorNumber = -100
+	End
+ELSE IF @rc = 100
 	Begin
 		Insert Into [dbo].[Appointments](
 			PatientID,
@@ -361,7 +387,8 @@ As
 			@ClinicID,
 			@AppointmentTime
 		)
-	End
+Return @ErrorNumber
+End
 GO
 
 -- Appointment Update
@@ -376,6 +403,13 @@ Create Proc pUpdAppointment (
 	@NewAppointmentTime datetime
 )
 As 
+Exec @rc = pCheckTime @NewAppointmentTime
+
+IF @rc = -100
+	Begin
+		Set @ErrorNumber = -100
+	End
+ELSE IF @rc = 100
 	Begin
 		Update [dbo].[Appointments] 
 		Set 
@@ -389,6 +423,7 @@ As
 			(ClinicID = @OldClinicID) and 
 			(AppointmentTime = @OldAppointmentTime)
 	End
+Return @ErrorNumber
 GO
 
 -- Appointment Delete
