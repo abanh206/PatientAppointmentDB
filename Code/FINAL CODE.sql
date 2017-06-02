@@ -87,8 +87,6 @@ GO
 -- Create the Views
 --********************************************************************--
 
--- VIEWS CAN"T BE ALLOWED TO EVERYTHING? NOT EVERYONE CAN VIEW ALL PATIENTS
-
 -- View all Clinics
 -- Looks as though the view on the patient's application reveals only 
 -- names of the clinics
@@ -476,21 +474,3 @@ Grant Exec on pDelDoctor to Public
 Grant Exec on pInsAppointment to Public
 Grant Exec on pUpdAppointment to Public
 Grant Exec on pDelAppointment to Public
-
---********************************************************************--
--- Import sample data
---********************************************************************--
-
---MD C:\_SQLDev
-
---REM Import data
---BCP PatientAppointmentsDB_AlanBanh.dbo.Clinic in "C:\Users\Alan\Desktop\INFO 340\Final\Clinic_Data.csv" -T -c -t "," -r "\n"
-
---********************************************************************--
--- Backup database
---********************************************************************--
-
-Backup
-Database PatientAppointmentsDB_AlanBanh
-To Disk ='C:\Data\PatientAppointmentsDB_AlanBanh_Full.bak'
-GO
