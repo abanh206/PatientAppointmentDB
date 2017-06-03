@@ -21,7 +21,7 @@ GO
 
 -- Clinic Dumby Table
 
-IF OBJECT_ID('Clinic_Table') IS NOT NULL 
+IF OBJECT_ID('Clinic_Table') IS NOT NULL We 
 	DROP TABLE Clinic_Table
 GO
 

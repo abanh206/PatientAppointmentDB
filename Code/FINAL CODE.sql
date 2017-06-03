@@ -4,7 +4,6 @@
 Dev: Alan Banh
 UWNetID: abanh206
 ChangeLog:	<05/25/2017> Alan Banh, Created Clinics Table, Procedures, Views, Restrictions,
-									Inserts 1000 Data and Restore
 			<05/28/2017> Alan Banh, Created Patients Table, Procedures, Views, Restrictions
 			<05/29/2017> Alan Banh, Created Doctor Table, Procedures, Views, Restrictions
 			<05/29/2017> Alan Banh, Created Appointment Table, Procedures, Views, Restrictions
