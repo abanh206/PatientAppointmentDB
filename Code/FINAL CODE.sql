@@ -9,6 +9,7 @@ ChangeLog:	<05/25/2017> Alan Banh, Created Clinics Table, Procedures, Views, Res
 			<05/29/2017> Alan Banh, Created Doctor Table, Procedures, Views, Restrictions
 			<05/29/2017> Alan Banh, Created Appointment Table, Procedures, Views, Restrictions
 			<05/30/2017> Alan Banh, Created Report View, Fix Updates and Deletes Stored Procedures
+			<06/01/2017> Alan Banh, Worked on creating the check sprocs
  <date>,<Your Name>,Created script for database
 **********************************************************/
 
@@ -76,7 +77,7 @@ Create Table [dbo].[Appointments] (
 	PatientID int FOREIGN KEY REFERENCES Patients(PatientID),
 	DoctorID int FOREIGN KEY REFERENCES Doctors(DoctorID),
 	ClinicID int FOREIGN KEY REFERENCES Clinics(ClinicID),
-	AppointmentTime datetime NOT NULL check (AppointmentTime > getdate())
+	AppointmentTime datetime NOT NULL,
 	CONSTRAINT [UQ_AppointmentInfo] UNIQUE NONCLUSTERED
 	(
 		[DoctorID], [ClinicID], [AppointmentTime]
@@ -341,21 +342,21 @@ As
 	End
 GO
 
--- Checks date time
-CREATE PROC pCheckTime
-	(@DatetoVerify DateTime)
-AS
-	DECLARE @ErrorNumber int
-	IF @DatetoVerify < GETDATE() 
-		BEGIN
-			SET @ErrorNumber = -100 -- Appointment date is before current date
-		END
-	ELSE
-		BEGIN
-			SET @ErrorNumber = 100 -- Appointment Date is after current date
-		END
-RETURN @ErrorNumber
--- End of pCheckDateRange
+---- Checks date time
+--CREATE PROC pCheckTime
+--	(@DatetoVerify DateTime)
+--AS
+--	DECLARE @ErrorNumber int
+--	IF @DatetoVerify < GETDATE() 
+--		BEGIN
+--			SET @ErrorNumber = -100 -- Appointment date is before current date
+--		END
+--	ELSE
+--		BEGIN
+--			SET @ErrorNumber = 100 -- Appointment Date is after current date
+--		END
+--RETURN @ErrorNumber
+---- End of pCheckDateRange
 
 
 -- Appointment Insert
@@ -366,14 +367,14 @@ Create Proc pInsAppointment (
 	@AppointmentTime datetime
 )
 As 
-Declare @rc int
-Exec @rc = pCheckTime @AppointmentTime
+--Declare @rc int
+--Exec @rc = pCheckTime @AppointmentTime
 
-IF @rc = -100
-	Begin
-		Set @ErrorNumber = -100
-	End
-ELSE IF @rc = 100
+--IF @rc = -100
+--	Begin
+--		Set @ErrorNumber = -100
+--	End
+--ELSE IF @rc = 100
 	Begin
 		Insert Into [dbo].[Appointments](
 			PatientID,
@@ -387,7 +388,7 @@ ELSE IF @rc = 100
 			@ClinicID,
 			@AppointmentTime
 		)
-Return @ErrorNumber
+--Return @ErrorNumber
 End
 GO
 
@@ -403,13 +404,13 @@ Create Proc pUpdAppointment (
 	@NewAppointmentTime datetime
 )
 As 
-Exec @rc = pCheckTime @NewAppointmentTime
+--Exec @rc = pCheckTime @NewAppointmentTime
 
-IF @rc = -100
-	Begin
-		Set @ErrorNumber = -100
-	End
-ELSE IF @rc = 100
+--IF @rc = -100
+--	Begin
+--		Set @ErrorNumber = -100
+--	End
+--ELSE IF @rc = 100
 	Begin
 		Update [dbo].[Appointments] 
 		Set 
@@ -423,7 +424,7 @@ ELSE IF @rc = 100
 			(ClinicID = @OldClinicID) and 
 			(AppointmentTime = @OldAppointmentTime)
 	End
-Return @ErrorNumber
+--Return @ErrorNumber
 GO
 
 -- Appointment Delete
