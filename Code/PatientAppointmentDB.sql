@@ -123,9 +123,26 @@ GO
 -- Create the Procedures for Inserts & Updates
 --********************************************************************--
 
+-- Checks unique address
+CREATE PROC uAddress
+	(@DatetoVerify nVarchar(100))
+AS
+	DECLARE @ErrorNumber int
+	IF @DatetoVerify < GETDATE() 
+		BEGIN
+			SET @ErrorNumber = -100 -- Appointment date is before current date
+		END
+	ELSE
+		BEGIN
+			SET @ErrorNumber = 100 -- Appointment Date is after current date
+		END
+RETURN @ErrorNumber
+GO
+-- End of pCheckDateRange
+
 -- Clinics Insert
 Create Proc pInsClinic (
-	@ClinicName nvarchar(100),
+	@ClinicName nVarchar(100),
 	@ClinicAddress nVarchar(100),
 	@ClinicCity nVarchar(100),
 	@ClinicState nVarchar(100),
@@ -149,6 +166,7 @@ As
 		)
 	End
 GO
+
 
 -- Clinics Update
 Create Proc pUpdClinic (
@@ -184,7 +202,6 @@ GO
 
 -- Clinics Delete
 Create Proc pDelClinic (
-	@ClinicID int,
 	@ClinicName nvarchar(100),
 	@ClinicAddress nVarchar(100),
 	@ClinicCity nVarchar(100),
@@ -209,6 +226,7 @@ Create Proc pInsPatient (
 	@PatientLName nVarchar(100),
 	@PatientAddress nVarchar(100),
 	@PatientCity nVarchar(100),
+	@PatientState nVarchar(100),
 	@PatientZip nVarchar(100),
 	@PatientPhone nVarchar(15)
 )
@@ -219,6 +237,7 @@ As
 			PatientLName,
 			PatientAddress,
 			PatientCity,
+			PatientState,
 			PatientZip,
 			PatientPhone
 		) 
@@ -227,6 +246,7 @@ As
 			@PatientLName,
 			@PatientAddress,
 			@PatientCity,
+			@PatientState,
 			@PatientZip,
 			@PatientPhone
 		)
@@ -341,21 +361,22 @@ As
 	End
 GO
 
----- Checks date time
---CREATE PROC pCheckTime
---	(@DatetoVerify DateTime)
---AS
---	DECLARE @ErrorNumber int
---	IF @DatetoVerify < GETDATE() 
---		BEGIN
---			SET @ErrorNumber = -100 -- Appointment date is before current date
---		END
---	ELSE
---		BEGIN
---			SET @ErrorNumber = 100 -- Appointment Date is after current date
---		END
---RETURN @ErrorNumber
----- End of pCheckDateRange
+-- Checks date time
+CREATE PROC pCheckTime
+	(@DatetoVerify DateTime)
+AS
+	DECLARE @ErrorNumber int
+	IF @DatetoVerify < GETDATE() 
+		BEGIN
+			SET @ErrorNumber = -100 -- Appointment date is before current date
+		END
+	ELSE
+		BEGIN
+			SET @ErrorNumber = 100 -- Appointment Date is after current date
+		END
+RETURN @ErrorNumber
+GO
+-- End of pCheckDateRange
 
 
 -- Appointment Insert
@@ -366,14 +387,14 @@ Create Proc pInsAppointment (
 	@AppointmentTime datetime
 )
 As 
---Declare @rc int
---Exec @rc = pCheckTime @AppointmentTime
+Declare @ErrorNumber int
+Exec @ErrorNumber = pCheckTime @AppointmentTime
 
---IF @rc = -100
---	Begin
---		Set @ErrorNumber = -100
---	End
---ELSE IF @rc = 100
+IF @ErrorNumber = -100
+	Begin
+		Set @ErrorNumber = -100
+	End
+ELSE IF @ErrorNumber = 100
 	Begin
 		Insert Into [dbo].[Appointments](
 			PatientID,
@@ -387,7 +408,7 @@ As
 			@ClinicID,
 			@AppointmentTime
 		)
---Return @ErrorNumber
+Return @ErrorNumber
 End
 GO
 

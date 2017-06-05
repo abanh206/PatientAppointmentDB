@@ -21,7 +21,7 @@ GO
 
 -- Clinic Dumby Table
 
-IF OBJECT_ID('Clinic_Table') IS NOT NULL We 
+IF OBJECT_ID('Clinic_Table') IS NOT NULL 
 	DROP TABLE Clinic_Table
 GO
 
@@ -140,13 +140,184 @@ Select * from Appointments -- Check for Insert
 -- Validation and Execution wtih Stored Procedures
 --********************************************************************--
 
+DECLARE @ErrorNumber int
+BEGIN TRANSACTION
+  EXEC @ErrorNumber = pInsAppointment '1', '2', '3', '20170909 18:12:11'
+  IF @ErrorNumber = 100
+    COMMIT TRANSACTION
+  ELSE
+    ROLLBACK TRANSACTION
+SELECT @ErrorNumber
+Go
 
+
+
+
+
+
+
+
+--CLINICS INS
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pInsClinic 'Westside', '123 True St.', 'Bgame', 'CA', '94010';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vClinics
+
+
+--CLINICS UPD
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pUpdClinic 'Westside', '123 True St.', 'Bgame', 'CA', '94010', 
+									'Eastside', '123 True St.', 'Burlingame', 'CA', '94010';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vClinics
+
+
+--CLINICS DEL
+DECLARE @errornumber int = -100
+	BEGIN TRANSACTION
+	Exec @errornumber = pDelClinic 'Westside', '123 True St.', 'Bgame', 'CA', '94010'
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vClinics
+
+
+--PATIENT INS
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pInsPatient 'Martha', 'asdf', '123 ast at.', 'seattle', 'WA', '94010', '123124312';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vPatients
+
+
+--PATIENT UPD
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pUpdPatient 'Martha', 'S', '123 ast at.', 'seattle', 'WA', '94010', '123124312',
+									'Martha', 'Smith', '123 ast at.', 'Seattle', 'WA', '94010', '12314312';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vPatients
+
+
+--PATIENT DEL
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pDelPatient 'Martha', 'Smith', '123 ast at.', 'Seattle', 'WA', '94010', '12314312';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vPatients
+
+
+--DOCTOR INS
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pInsDoctor 'Miranda', 'Gonzales';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vDoctors
+
+
+--DOCTOR UPD
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pUpdDoctor 'Miranda', 'Gonzales',
+									'Miranda', 'Guidina';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vDoctors
+
+--DOCTOR DEL
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pDelDoctor 'Miranda', 'Guidina';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vDoctors
+
+
+--APPOINTMENT INS
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pInsAppointment '2', '1', '4', '20170808 18:12:00';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vAppointments
+
+--APPOINTMENT UPD
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pUpdAppointment '2', '1', '4', '20170808 18:12:00',
+										'3', '1', '2', '20170808 18:30:00';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vAppointments
+
+--APPOINTMENT DEL
+DECLARE @errornumber int
+	BEGIN TRANSACTION
+	Exec @errornumber = pDelAppointment '3', '1', '2', '20170808 18:30:00';
+		if @errornumber = 100
+			commit tran
+		else
+			rollback tran
+	select @errornumber
+Go
+Select * from vAppointments
 
 --********************************************************************--
 -- Backup database
 --********************************************************************--
 
---Backup
---Database PatientAppointmentsDB_AlanBanh
---To Disk ='C:\Data\PatientAppointmentsDB_AlanBanh_Full.bak'
---GO
+Restore
+Database PatientAppointmentsDB_AlanBanh
+From Disk ='C:\Data\PatientAppointmentsDB_AlanBanh_Full.bak'
+GO
