@@ -9,6 +9,7 @@ ChangeLog:	<05/30/2017>, Alan Banh, Created the dumby tables to import the data,
 			<06/01/2017>, Alan Banh, Create code to delete dumby table
 			<06/02/2017>, Alan Banh, Create Appointment dumby table, import the data 
 									 Finish inserts into correct table, Backup created
+			<06/05/2017>, Alan Banh, Finish Commit and Rollbacks for the Exec of SProcs
  <date>,<Your Name>,Created script for database
 **********************************************************/
 
@@ -150,13 +151,6 @@ BEGIN TRANSACTION
 SELECT @ErrorNumber
 Go
 
-
-
-
-
-
-
-
 --CLINICS INS
 DECLARE @errornumber int
 	BEGIN TRANSACTION
@@ -214,7 +208,7 @@ Select * from vPatients
 DECLARE @errornumber int
 	BEGIN TRANSACTION
 	Exec @errornumber = pUpdPatient 'Martha', 'S', '123 ast at.', 'seattle', 'WA', '94010', '123124312',
-									'Martha', 'Smith', '123 ast at.', 'Seattle', 'WA', '94010', '12314312';
+									'Martha', 'Smith', '123 ast at.', 'Seattle', 'WA', '94010', '12314312'
 		if @errornumber = 100
 			commit tran
 		else
@@ -317,7 +311,7 @@ Select * from vAppointments
 -- Backup database
 --********************************************************************--
 
-Restore
+Backup
 Database PatientAppointmentsDB_AlanBanh
-From Disk ='C:\Data\PatientAppointmentsDB_AlanBanh_Full.bak'
+To Disk ='C:\Data\PatientAppointmentsDB_AlanBanh_Full.bak'
 GO

@@ -9,6 +9,7 @@ ChangeLog:	<05/25/2017> Alan Banh, Created Clinics Table, Procedures, Views, Res
 			<05/29/2017> Alan Banh, Created Appointment Table, Procedures, Views, Restrictions
 			<05/30/2017> Alan Banh, Created Report View, Fix Updates and Deletes Stored Procedures
 			<06/01/2017> Alan Banh, Worked on creating the check sprocs
+			<06/05/2017> Alan Banh, SProc Error Handling Finished
  <date>,<Your Name>,Created script for database
 **********************************************************/
 
@@ -123,23 +124,6 @@ GO
 -- Create the Procedures for Inserts & Updates
 --********************************************************************--
 
--- Checks unique address
-CREATE PROC uAddress
-	(@DatetoVerify nVarchar(100))
-AS
-	DECLARE @ErrorNumber int
-	IF @DatetoVerify < GETDATE() 
-		BEGIN
-			SET @ErrorNumber = -100 -- Appointment date is before current date
-		END
-	ELSE
-		BEGIN
-			SET @ErrorNumber = 100 -- Appointment Date is after current date
-		END
-RETURN @ErrorNumber
-GO
--- End of pCheckDateRange
-
 -- Clinics Insert
 Create Proc pInsClinic (
 	@ClinicName nVarchar(100),
@@ -149,22 +133,31 @@ Create Proc pInsClinic (
 	@ClinicZip nVarchar(100)
 )
 As 
-	Begin
-		Insert Into [dbo].[Clinics](
-			ClinicName,
-			ClinicAddress,
-			ClinicCity,
-			ClinicState,
-			ClinicZip
-		) 
-		Values (
-			@ClinicName,
-			@ClinicAddress,
-			@ClinicCity,
-			@ClinicState,
-			@ClinicZip
-		)
-	End
+DECLARE @ErrorNumber int
+	Begin try
+		Begin Tran
+			Insert Into [dbo].[Clinics](
+				ClinicName,
+				ClinicAddress,
+				ClinicCity,
+				ClinicState,
+				ClinicZip
+			) 
+			Values (
+				@ClinicName,
+				@ClinicAddress,
+				@ClinicCity,
+				@ClinicState,
+				@ClinicZip
+			)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+	Begin Catch
+		Rollback Tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 
@@ -183,21 +176,30 @@ Create Proc pUpdClinic (
 	@NewClinicZip nVarchar(100)
 )
 As 
-	Begin
-		Update [dbo].[Clinics] 
-		Set 
-			ClinicName = @NewClinicName,
-			ClinicAddress = @NewClinicAddress,
-			ClinicCity = @NewClinicCity,
-			ClinicState = @NewClinicState,
-			ClinicZip = @NewClinicZip
-		Where 
-			(ClinicName = @OldClinicName) and
-			(ClinicAddress = @OldClinicAddress) and
-			(ClinicCity = @OldClinicCity) and
-			(ClinicState = @OldClinicState) and
-			(ClinicZip = @OldClinicZip)
-	End
+Declare @ErrorNumber int
+	Begin try
+		Begin Tran
+			Update [dbo].[Clinics] 
+			Set 
+				ClinicName = @NewClinicName,
+				ClinicAddress = @NewClinicAddress,
+				ClinicCity = @NewClinicCity,
+				ClinicState = @NewClinicState,
+				ClinicZip = @NewClinicZip
+			Where 
+				(ClinicName = @OldClinicName) and
+				(ClinicAddress = @OldClinicAddress) and
+				(ClinicCity = @OldClinicCity) and
+				(ClinicState = @OldClinicState) and
+				(ClinicZip = @OldClinicZip)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End try
+	Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Clinics Delete
@@ -209,15 +211,23 @@ Create Proc pDelClinic (
 	@ClinicZip nVarchar(100)
 )
 As 
-	Begin
-		Delete from [dbo].[Clinics]
-		Where 
-			(ClinicName = @ClinicName) and
-			(ClinicAddress = @ClinicAddress) and
-			(ClinicCity = @ClinicCity) and
-			(ClinicState = @ClinicState) and
-			(ClinicZip = @ClinicZip)
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Delete from [dbo].[Clinics]
+			Where 
+				(ClinicName = @ClinicName) and
+				(ClinicAddress = @ClinicAddress) and
+				(ClinicCity = @ClinicCity) and
+				(ClinicState = @ClinicState) and
+				(ClinicZip = @ClinicZip)
+		Commit Tran
+	End Try
+	Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Patient Insert
@@ -231,26 +241,35 @@ Create Proc pInsPatient (
 	@PatientPhone nVarchar(15)
 )
 As 
-	Begin
-		Insert Into [dbo].[Patients](
-			PatientFName,
-			PatientLName,
-			PatientAddress,
-			PatientCity,
-			PatientState,
-			PatientZip,
-			PatientPhone
-		) 
-		Values (
-			@PatientFName,
-			@PatientLName,
-			@PatientAddress,
-			@PatientCity,
-			@PatientState,
-			@PatientZip,
-			@PatientPhone
-		)
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Insert Into [dbo].[Patients](
+				PatientFName,
+				PatientLName,
+				PatientAddress,
+				PatientCity,
+				PatientState,
+				PatientZip,
+				PatientPhone
+			) 
+			Values (
+				@PatientFName,
+				@PatientLName,
+				@PatientAddress,
+				@PatientCity,
+				@PatientState,
+				@PatientZip,
+				@PatientPhone
+			)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+	Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Patients Update
@@ -269,23 +288,32 @@ Create Proc pUpdPatient (
 	@NewPatientPhone nVarchar(15)
 )
 As 
-	Begin
-		Update [dbo].[Patients] 
-		Set 
-			PatientFName = @NewPatientFName,
-			PatientLName = @NewPatientLName,
-			PatientAddress = @NewPatientAddress,
-			PatientCity = @NewPatientCity,
-			PatientZip = @NewPatientZip,
-			PatientPhone = @NewPatientPhone
-		Where 
-			PatientFName = @OldPatientFName and
-			PatientLName = @OldPatientLName and
-			PatientAddress = @OldPatientAddress and
-			PatientCity = @OldPatientCity and
-			PatientZip = @OldPatientZip and
-			PatientPhone = @OldPatientPhone
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Update [dbo].[Patients] 
+			Set 
+				PatientFName = @NewPatientFName,
+				PatientLName = @NewPatientLName,
+				PatientAddress = @NewPatientAddress,
+				PatientCity = @NewPatientCity,
+				PatientZip = @NewPatientZip,
+				PatientPhone = @NewPatientPhone
+			Where 
+				PatientFName = @OldPatientFName and
+				PatientLName = @OldPatientLName and
+				PatientAddress = @OldPatientAddress and
+				PatientCity = @OldPatientCity and
+				PatientZip = @OldPatientZip and
+				PatientPhone = @OldPatientPhone
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Patient Delete
@@ -298,16 +326,25 @@ Create Proc pDelPatient (
 	@PatientPhone nVarchar(15)
 )
 As 
-	Begin
-		Delete [dbo].[Patients] 
-		Where 
-			PatientFName = @PatientFName and
-			PatientLName = @PatientLName and
-			PatientAddress = @PatientAddress and
-			PatientCity = @PatientCity and
-			PatientZip = @PatientZip and
-			PatientPhone = @PatientPhone
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Delete [dbo].[Patients] 
+			Where 
+				PatientFName = @PatientFName and
+				PatientLName = @PatientLName and
+				PatientAddress = @PatientAddress and
+				PatientCity = @PatientCity and
+				PatientZip = @PatientZip and
+				PatientPhone = @PatientPhone
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Doctor Insert
@@ -316,16 +353,25 @@ Create Proc pInsDoctor (
 	@DoctorLName nVarchar(100)
 )
 As 
-	Begin
-		Insert Into [dbo].[Doctors](
-			DoctorFName,
-			DoctorLName
-		) 
-		Values (
-			@DoctorFName,
-			@DoctorLName
-		)
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Insert Into [dbo].[Doctors](
+				DoctorFName,
+				DoctorLName
+			) 
+			Values (
+				@DoctorFName,
+				@DoctorLName
+			)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Doctor Update
@@ -336,29 +382,47 @@ Create Proc pUpdDoctor (
 	@NewDoctorLName nVarchar(100)
 )
 As 
-	Begin
-		Update [dbo].[Doctors] 
-		Set 
-			DoctorFName = @NewDoctorFName,
-			DoctorLName = @NewDoctorLName
-		Where 
-			(DoctorFName = @OldDoctorFName) and 
-			(DoctorLName = @OldDoctorLName)
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Update [dbo].[Doctors] 
+			Set 
+				DoctorFName = @NewDoctorFName,
+				DoctorLName = @NewDoctorLName
+			Where 
+				(DoctorFName = @OldDoctorFName) and 
+				(DoctorLName = @OldDoctorLName)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Doctor Delete
-Create Proc pDelDoctor (
+Alter Proc pDelDoctor (
 	@DoctorFName nVarchar(100),
 	@DoctorLName nVarchar(100)
 )
 As 
-	Begin
-		Delete [dbo].[Doctors] 
-		Where 
-			(DoctorFName = @DoctorFName) and 
-			(DoctorLName = @DoctorLName)
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Delete [dbo].[Doctors] 
+			Where 
+				(DoctorFName = @DoctorFName) and 
+				(DoctorLName = @DoctorLName)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 -- Checks date time
@@ -424,6 +488,7 @@ Create Proc pUpdAppointment (
 	@NewAppointmentTime datetime
 )
 As 
+Declare @ErrorNumber int
 --Exec @rc = pCheckTime @NewAppointmentTime
 
 --IF @rc = -100
@@ -431,19 +496,27 @@ As
 --		Set @ErrorNumber = -100
 --	End
 --ELSE IF @rc = 100
-	Begin
-		Update [dbo].[Appointments] 
-		Set 
-			PatientID = @NewPatientID,
-			DoctorID = @NewDoctorID,
-			ClinicID = @NewClinicID,
-			AppointmentTime = @NewAppointmentTime
-		Where 
-			(PatientID = @OldPatientID) and 
-			(DoctorID = @OldDoctorID) and 
-			(ClinicID = @OldClinicID) and 
-			(AppointmentTime = @OldAppointmentTime)
-	End
+	Begin Try
+		Begin Tran
+			Update [dbo].[Appointments] 
+			Set 
+				PatientID = @NewPatientID,
+				DoctorID = @NewDoctorID,
+				ClinicID = @NewClinicID,
+				AppointmentTime = @NewAppointmentTime
+			Where 
+				(PatientID = @OldPatientID) and 
+				(DoctorID = @OldDoctorID) and 
+				(ClinicID = @OldClinicID) and 
+				(AppointmentTime = @OldAppointmentTime)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 --Return @ErrorNumber
 GO
 
@@ -455,14 +528,23 @@ Create Proc pDelAppointment (
 	@AppointmentTime datetime
 )
 As
-	Begin
-		Delete from [dbo].[Appointments]
-		Where 
-			(PatientID = @PatientID) and 
-			(DoctorID = @DoctorID) and 
-			(ClinicID = @ClinicID) and 
-			(AppointmentTime = @AppointmentTime)
-	End
+Declare @ErrorNumber int
+	Begin Try
+		Begin Tran
+			Delete from [dbo].[Appointments]
+			Where 
+				(PatientID = @PatientID) and 
+				(DoctorID = @DoctorID) and 
+				(ClinicID = @ClinicID) and 
+				(AppointmentTime = @AppointmentTime)
+		Commit Tran
+		Set @ErrorNumber = 100
+	End Try
+		Begin Catch
+		Rollback tran
+		Set @ErrorNumber = -100
+	End Catch
+	Return @ErrorNumber
 GO
 
 --********************************************************************--
