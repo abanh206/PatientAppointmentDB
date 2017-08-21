@@ -163,7 +163,6 @@ GO
 
 -- Clinics Update
 Create Proc pUpdClinic (
-	--@ClinicID int,
 	@OldClinicName nvarchar(100),
 	@OldClinicAddress nVarchar(100),
 	@OldClinicCity nVarchar(100),
@@ -489,13 +488,6 @@ Create Proc pUpdAppointment (
 )
 As 
 Declare @ErrorNumber int
---Exec @rc = pCheckTime @NewAppointmentTime
-
---IF @rc = -100
---	Begin
---		Set @ErrorNumber = -100
---	End
---ELSE IF @rc = 100
 	Begin Try
 		Begin Tran
 			Update [dbo].[Appointments] 
@@ -517,7 +509,6 @@ Declare @ErrorNumber int
 		Set @ErrorNumber = -100
 	End Catch
 	Return @ErrorNumber
---Return @ErrorNumber
 GO
 
 -- Appointment Delete
@@ -561,7 +552,6 @@ Deny Delete on Clinics to Public
 Deny Select on Patients to Public
 Deny Insert on Patients to Public
 Deny Update on Patients to Public
---Should delete be allowed? I don't think so
 Deny Delete on Patients to Public
 
 -- Doctor
